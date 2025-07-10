@@ -1,30 +1,35 @@
 #include <iostream>
 using namespace std;
+
 int main()
-{
-    // input section
+{// input section
     int n;
-    cout << "enter the total number= ";
+    cout << "Enter the total number: ";
     cin >> n;
+
     int array[n];
-    cout << "enter the numbers" << endl;
+    cout << "Enter the numbers:\n";
     for (int i = 0; i < n; i++)
     {
         cin >> array[i];
     }
-    // matching section
+
+    // Matching section
     for (int i = 0; i < n; i++)
     {
         int j;
-        for (j = i+1; j < n; j++)
+        for (j = 0; j < n; j++)
         {
-            if (array[j] == array[i])
+            if (i != j && array[i] == array[j])
             {
-               break;
-            }
-             if (array[j] != array[i]){
-                cout<<array[i]<<endl;
+                break; 
             }
         }
+        if (j == n)
+        {
+            cout << array[i] << " is a unique number" << endl;
+        }
     }
+
+    return 0;
 }
