@@ -1,0 +1,17 @@
+{
+    "editor.minimap.enabled": false,
+    "editor.mouseWheelZoom": true,
+    "code-runner.clearPreviousOutput": true,
+    "code-runner.runInTerminal": true,
+    "code-runner.saveFileBeforeRun": true,
+    "workbench.colorTheme": "Visual Studio Dark - C++",
+    "workbench.navigationControl.enabled": false,
+    "workbench.layoutControl.enabled": false,
+    "explorer.confirmDragAndDrop": false,
+    "git.autofetch": true,
+    "redhat.telemetry.enabled": true,
+    "editor.formatOnSave": true,
+    "[java]": {
+        "editor.defaultFormatter": "redhat.java"
+    }
+}
