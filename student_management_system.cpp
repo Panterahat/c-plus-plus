@@ -7,7 +7,7 @@ class Student
     double marks;
 
 public:
-    int semester_fee = 60000;
+    double semester_fee = 60000;
     void setData(int i, string n, double m)
     {
         id = i;
@@ -23,6 +23,23 @@ public:
     int getId()
     {
         return id;
+    }
+    double getSemesterFee()
+    {
+        if (marks > 90)
+        {
+            semester_fee = semester_fee * 0.7;
+            return semester_fee;
+        }
+        if (marks > 70)
+        {
+            semester_fee = semester_fee * 0.9;
+            return semester_fee;
+        }
+        else
+        {
+            return semester_fee;
+        }
     }
 };
 int main()
@@ -62,6 +79,7 @@ int main()
                 cout << "Enter marks of student " << studentCount + 1 << ": ";
                 cin >> markss;
                 cout << endl;
+                cout << endl;
 
                 students[studentCount].setData(idd, namee, markss);
                 studentCount++; // increment total count
@@ -76,15 +94,21 @@ int main()
                 cout << "Student " << i + 1 << ":\n";
                 students[i].displayData();
                 cout << endl;
+                cout << endl;
             }
         }
+
         if (choice == 3)
         {
             cout << "Exiting the program." << endl;
             return 0;
         }
+
         if (choice == 4) // Search
         {
+        searchagain:
+            int newChoice;
+
             int searchId;
             cout << "Enter the ID of the student to search: ";
             cin >> searchId;
@@ -96,12 +120,30 @@ int main()
                 {
                     cout << "Student found:\n";
                     students[i].displayData();
+                    cout << "Semester Fee: " << students[i].getSemesterFee() << endl;
                     found = true;
                     break;
                 }
             }
             if (!found)
+            {
                 cout << "Student not found!" << endl;
+                cout << endl;
+                cout << endl;
+            }
+            cout << "search again?? \n 1.yes \n 2.no \n==>>" << endl;
+
+            cin >> newChoice;
+            if (newChoice == 1)
+            {
+                goto searchagain;
+            }
+            else
+            {
+            }
+
+            cout << endl;
+            cout << endl;
         }
     }
 }
