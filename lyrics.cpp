@@ -96,12 +96,12 @@ int main()
         1275,
         1275,
         // tumi roye jao sorgo dare amar opekkhai (7 words, 9700/7)
-        1386,
-        1386,
-        1386,
-        1386,
-        1386,
-        1386,
+        1286,
+        1286,
+        1286,
+        1286,
+        1286,
+        1886,
         1386,
         // shunno chokhe tomay dekha (4 words, 5000/4)
         1250,
