@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Timetable Scheduler</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #66b3f1;
+            --surface: #ffffff;
+            --surface2: #eeeef4;
+            --border: #d4d4e0;
+            --text: #1a1a2e;
+            --muted: #7070a0;
+            --accent: #7c6fff;
+            --accent2: #ff6f91;
+            --slot-colors: #7c6fff, #2ecf9a, #ff9f43, #ff6f91, #54a0ff, #ff6348;
+            --c0: #7c6fff;
+            --c1: #2ecf9a;
+            --c2: #ff9f43;
+            --c3: #ff6f91;
+            --c4: #54a0ff;
+            --c5: #ff6348;
+            --c6: #ffd32a;
+            --c7: #c44dff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        header {
+            margin-bottom: 28px;
+        }
+
+        header h1 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #e8e8f0 0%, #7c6fff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header p {
+            color: var(--muted);
+            font-size: 0.88rem;
+            margin-top: 4px;
+            font-family: 'DM Mono', monospace;
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 8px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text);
+            border-color: #444;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* CARDS */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 18px;
+        }
+
+        .card h3 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 14px;
+            color: var(--text);
+        }
+
+        /* SETUP */
+        .setup-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        @media (max-width: 700px) {
+            .setup-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            padding: 9px 13px;
+            outline: none;
+            transition: border 0.15s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+        }
+
+        input[type="text"]::placeholder {
+            color: var(--muted);
+        }
+
+        .btn {
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 9px 16px;
+            cursor: pointer;
+            transition: opacity 0.15s, transform 0.1s;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            opacity: 0.88;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-danger {
+            background: #ff4060;
+            font-size: 0.78rem;
+            padding: 5px 11px;
+        }
+
+        .btn-run {
+            background: linear-gradient(135deg, #7c6fff, #ff6f91);
+            font-size: 0.95rem;
+            padding: 12px 32px;
+            border-radius: 10px;
+            width: 100%;
+            margin-top: 6px;
+        }
+
+        /* Course pills */
+        .pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.82rem;
+            padding: 4px 11px;
+            color: var(--text);
+        }
+
+        .pill .remove {
+            cursor: pointer;
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1;
+            transition: color 0.1s;
+        }
+
+        .pill .remove:hover {
+            color: #ff4060;
+        }
+
+        /* Student cards */
+        .student-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 13px 15px;
+            margin-bottom: 10px;
+            animation: slideIn 0.2s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .student-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .student-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .student-count {
+            font-size: 0.75rem;
+            color: var(--muted);
+            font-family: 'DM Mono', monospace;
+        }
+
+        .course-toggles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .course-toggle {
+            font-size: 0.78rem;
+            padding: 4px 11px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .course-toggle.selected {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .course-toggle.disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .max-warning {
+            font-size: 0.75rem;
+            color: #ff9f43;
+            margin-top: 7px;
+            display: none;
+        }
+
+        /* STATS BAR */
+        .stats-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 20px;
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .stat-val {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* SCHEDULE */
+        .schedule-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .schedule-row:last-child {
+            border-bottom: none;
+        }
+
+        .slot-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--muted);
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        .slot-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .slot-pill {
+            font-size: 0.82rem;
+            padding: 5px 13px;
+            border-radius: 20px;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        /* COLOR TABLE */
+        .color-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .color-table th {
+            text-align: left;
+            padding: 9px 12px;
+            color: var(--muted);
+            font-weight: 500;
+            border-bottom: 1px solid var(--border);
+            font-family: 'DM Mono', monospace;
+            font-size: 0.78rem;
+        }
+
+        .color-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .color-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .color-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 7px;
+        }
+
+        .time-badge {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            font-family: 'DM Mono', monospace;
+            color: var(--text);
+        }
+
+        .conflict-list {
+            color: var(--muted);
+            font-size: 0.78rem;
+        }
+
+        /* MATRIX */
+        .matrix-wrap {
+            overflow-x: auto;
+            margin-top: 18px;
+        }
+
+        .matrix {
+            border-collapse: collapse;
+            font-size: 0.72rem;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .matrix th,
+        .matrix td {
+            width: 36px;
+            height: 36px;
+            text-align: center;
+            border: 1px solid var(--border);
+            padding: 0;
+        }
+
+        .matrix th {
+            color: var(--muted);
+            background: var(--surface2);
+        }
+
+        .matrix td.conflict {
+            color: #ff6f91;
+            font-weight: 700;
+        }
+
+        .matrix td.none {
+            color: var(--border);
+        }
+
+        .matrix td.self {
+            color: var(--muted);
+        }
+
+        /* CANVAS */
+        #conflict-canvas {
+            display: block;
+            width: 100%;
+            max-width: 560px;
+            margin: 0 auto;
+            border-radius: 10px;
+            background: var(--bg);
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+
+        .legend-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ANALYSIS */
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        @media (max-width: 600px) {
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .before-after {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+        }
+
+        .ba-box {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 22px;
+            text-align: center;
+            flex: 1;
+            min-width: 130px;
+        }
+
+        .ba-box.highlight {
+            border-color: #2ecf9a;
+            background: rgba(46, 207, 154, 0.08);
+        }
+
+        .ba-val {
+            font-family: 'Syne', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+        }
+
+        .ba-label {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .ba-arrow {
+            font-size: 1.5rem;
+            color: var(--muted);
+        }
+
+        .saving-badge {
+            background: rgba(46, 207, 154, 0.15);
+            color: #2ecf9a;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            margin-top: 6px;
+            display: inline-block;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .algo-steps ol {
+            padding-left: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .algo-steps li {
+            font-size: 0.87rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .algo-steps li strong {
+            color: var(--text);
+        }
+
+        .complexity-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .complexity-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+
+        .complexity-key {
+            font-family: 'DM Mono', monospace;
+            color: var(--accent);
+            width: 14px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .complexity-val {
+            color: var(--muted);
+        }
+
+        .complexity-val strong {
+            color: var(--text);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--muted);
+            padding: 40px 20px;
+            font-size: 0.9rem;
+        }
+
+        .run-container {
+            padding: 6px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Exam Timetable Scheduler</h1>
+        <p>Graph coloring algorithm — conflict-free exam scheduling</p>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('setup')">Setup</button>
+        <button class="tab-btn" onclick="switchTab('schedule')">Schedule</button>
+        <button class="tab-btn" onclick="switchTab('colortable')">Color table</button>
+        <button class="tab-btn" onclick="switchTab('graph')">Conflict graph</button>
+        <button class="tab-btn" onclick="switchTab('analysis')">Analysis</button>
+    </div>
+
+    <!-- ===== SETUP ===== -->
+    <div class="tab-panel active" id="tab-setup">
+        <div class="setup-grid">
+            <div class="card">
+                <h3>Courses / Exams</h3>
+                <div class="input-row">
+                    <input type="text" id="course-input" placeholder="e.g. DSA, Math, OS..."
+                        onkeydown="if(event.key==='Enter')addCourse()">
+                    <button class="btn" onclick="addCourse()">Add</button>
+                </div>
+                <div class="pills" id="course-pills"></div>
+            </div>
+
+            <div class="card">
+                <h3>Students</h3>
+                <p style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;">Add a student, then pick their
+                    courses (max 5).</p>
+                <div class="input-row">
+                    <input type="text" id="student-input" placeholder="Student name..."
+                        onkeydown="if(event.key==='Enter')addStudent()">
+                    <button class="btn" onclick="addStudent()">Add student</button>
+                </div>
+                <div id="student-list"></div>
+            </div>
+        </div>
+
+        <div class="run-container">
+            <button class="btn btn-run" onclick="runScheduler()">▶ Run Scheduler</button>
+        </div>
+    </div>
+
+    <!-- ===== SCHEDULE ===== -->
+    <div class="tab-panel" id="tab-schedule">
+        <div class="stats-bar" id="stats-bar">
+            <div class="stat-box">
+                <div class="stat-val" id="s-exams">—</div>
+                <div class="stat-label">Exams</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" id="s-slots">—</div>
+                <div class="stat-label">Slots used</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" id="s-conflicts">—</div>
+                <div class="stat-label">Conflict pairs</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" id="s-students">—</div>
+                <div class="stat-label">Students</div>
+            </div>
+        </div>
+        <div class="card">
+            <div id="schedule-content">
+                <div class="empty-state">Run the scheduler first.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== COLOR TABLE ===== -->
+    <div class="tab-panel" id="tab-colortable">
+        <div class="card">
+            <h3>Course → color → slot assignment</h3>
+            <div id="color-table-content">
+                <div class="empty-state">Run the scheduler first.</div>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Conflict (adjacency) matrix</h3>
+            <div id="matrix-content">
+                <div class="empty-state">Run the scheduler first.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CONFLICT GRAPH ===== -->
+    <div class="tab-panel" id="tab-graph">
+        <div class="card">
+            <div id="graph-info"
+                style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;font-family:'DM Mono',monospace;"></div>
+            <canvas id="conflict-canvas" width="560" height="420"></canvas>
+            <div class="legend" id="graph-legend"></div>
+        </div>
+    </div>
+
+    <!-- ===== ANALYSIS ===== -->
+    <div class="tab-panel" id="tab-analysis">
+        <div class="card">
+            <div class="before-after" id="before-after">
+                <div class="empty-state">Run the scheduler first.</div>
+            </div>
+        </div>
+        <div class="analysis-grid">
+            <div class="card algo-steps">
+                <h3>Algorithm: greedy graph coloring</h3>
+                <ol>
+                    <li>Each exam = a <strong>node</strong> in a graph.</li>
+                    <li>Two exams share an <strong>edge</strong> if any student takes both — they conflict.</li>
+                    <li>Sort nodes by <strong>degree</strong> (most conflicts first) — DSATUR heuristic.</li>
+                    <li>Assign the <strong>lowest available color</strong> so no two neighbors share one.</li>
+                    <li>Colors used = <strong>chromatic number</strong> = minimum slots needed.</li>
+                </ol>
+            </div>
+            <div class="card">
+                <h3>Complexity analysis</h3>
+                <ul class="complexity-list">
+                    <li><span class="complexity-key">V</span><span class="complexity-val">Number of exams
+                            (vertices)</span></li>
+                    <li><span class="complexity-key">E</span><span class="complexity-val">Number of conflict pairs
+                            (edges)</span></li>
+                    <li><span class="complexity-key">T</span><span class="complexity-val">Time complexity: <strong>O(V²
+                                + E)</strong></span></li>
+                    <li><span class="complexity-key">S</span><span class="complexity-val">Space complexity: <strong>O(V
+                                + E)</strong></span></li>
+                    <li><span class="complexity-key">!</span><span class="complexity-val">Optimal coloring is NP-hard;
+                            greedy gives a polynomial-time approximation.</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ───── STATE ─────
+        const SLOT_NAMES = [
+            'Day 1 — Morning', 'Day 1 — Afternoon',
+            'Day 2 — Morning', 'Day 2 — Afternoon',
+            'Day 3 — Morning', 'Day 3 — Afternoon',
+            'Day 4 — Morning', 'Day 4 — Afternoon',
+            'Day 5 — Morning', 'Day 5 — Afternoon',
+        ];
+        const COLOR_NAMES = ['Blue', 'Green', 'Amber', 'Pink', 'Purple', 'Coral', 'Yellow', 'Violet'];
+        const COLORS = ['#7c6fff', '#2ecf9a', '#ff9f43', '#ff6f91', '#a29bfe', '#ff6348', '#ffd32a', '#c44dff'];
+
+        let courses = ['DSA', 'Algorithms', 'Networks', 'OS', 'Math', 'Database', 'bangla', 'english', 'java', 'pyrhon', 'html', 'ccss'];
+        let students = [
+            { name: 'Rahat', courses: ['DSA', 'Algorithms', 'Networks', 'Math', 'pyrhon'] },
+            { name: 'Arif', courses: ['Algorithms', 'Networks', 'OS', 'Database', 'english'] },
+            { name: 'Nadia', courses: ['DSA', 'OS', 'Math', 'Database', 'html'] },
+            { name: 'Tanvir', courses: ['DSA', 'Algorithms', 'OS', 'Math', 'Database'] },
+            { name: 'Mim', courses: ['Networks', 'OS', 'Math', 'english', 'ccss'] },
+        ];
+
+        let result = null;
+
+        // ───── TABS ─────
+        function switchTab(name) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                if (b.textContent.trim().toLowerCase().replace(' ', '') === name ||
+                    (name === 'colortable' && b.textContent.trim() === 'Color table') ||
+                    (name === 'graph' && b.textContent.trim() === 'Conflict graph'))
+                    b.classList.add('active');
+            });
+            if (name === 'graph' && result) drawGraph();
+        }
+
+        // ───── COURSE MANAGEMENT ─────
+        function renderCourses() {
+            const c = document.getElementById('course-pills');
+            c.innerHTML = courses.map((n, i) => `
+    <span class="pill">${n}<span class="remove" onclick="removeCourse(${i})">×</span></span>
+  `).join('');
+            renderStudentToggles();
+        }
+
+        function addCourse() {
+            const inp = document.getElementById('course-input');
+            const v = inp.value.trim();
+            if (v && !courses.includes(v)) { courses.push(v); inp.value = ''; renderCourses(); }
+            else inp.value = '';
+        }
+
+        function removeCourse(i) {
+            const name = courses[i];
+            courses.splice(i, 1);
+            students.forEach(s => { s.courses = s.courses.filter(c => c !== name); });
+            renderCourses(); renderStudents();
+        }
+
+        // ───── STUDENT MANAGEMENT ─────
+        function renderStudents() {
+            const c = document.getElementById('student-list');
+            c.innerHTML = students.map((st, si) => `
+    <div class="student-card">
+      <div class="student-header">
+        <span class="student-name">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          ${st.name}
+          <span class="student-count">(${st.courses.length}/5)</span>
+        </span>
+        <button class="btn btn-danger" onclick="removeStudent(${si})">Remove</button>
+      </div>
+      <div class="course-toggles">
+        ${courses.map(c => {
+                const sel = st.courses.includes(c);
+                const dis = !sel && st.courses.length >= 5;
+                return `<span class="course-toggle${sel ? ' selected' : ''}${dis ? ' disabled' : ''}"
+            onclick="toggleCourse(${si},'${c}')">${c}</span>`;
+            }).join('')}
+      </div>
+      <div class="max-warning" id="warn-${si}" style="${st.courses.length >= 5 ? 'display:block' : ''}">⚠ Max 5 courses reached</div>
+    </div>
+  `).join('');
+        }
+
+        function renderStudentToggles() { renderStudents(); }
+
+        function addStudent() {
+            const inp = document.getElementById('student-input');
+            const v = inp.value.trim();
+            if (v) { students.push({ name: v, courses: [] }); inp.value = ''; renderStudents(); }
+        }
+
+        function removeStudent(i) { students.splice(i, 1); renderStudents(); }
+
+        function toggleCourse(si, course) {
+            const st = students[si];
+            if (st.courses.includes(course)) {
+                st.courses = st.courses.filter(c => c !== course);
+            } else {
+                if (st.courses.length >= 5) return;
+                st.courses.push(course);
+            }
+            renderStudents();
+        }
+
+        // ───── ALGORITHM ─────
+        function buildAdjacency() {
+            const adj = {};
+            courses.forEach(c => adj[c] = new Set());
+            students.forEach(st => {
+                for (let i = 0; i < st.courses.length; i++)
+                    for (let j = i + 1; j < st.courses.length; j++) {
+                        adj[st.courses[i]].add(st.courses[j]);
+                        adj[st.courses[j]].add(st.courses[i]);
+                    }
+            });
+            return adj;
+        }
+
+        function greedyColor(adj) {
+            const sorted = [...courses].sort((a, b) => adj[b].size - adj[a].size);
+            const coloring = {};
+            sorted.forEach(node => {
+                const neighborColors = new Set([...adj[node]].map(n => coloring[n]).filter(c => c !== undefined));
+                let color = 0;
+                while (neighborColors.has(color)) color++;
+                coloring[node] = color;
+            });
+            return coloring;
+        }
+
+        function runScheduler() {
+            if (courses.length === 0) { alert('Add at least one course.'); return; }
+
+            const adj = buildAdjacency();
+            const coloring = greedyColor(adj);
+            const numColors = Math.max(...Object.values(coloring)) + 1;
+
+            const slots = {};
+            Object.entries(coloring).forEach(([c, col]) => {
+                if (!slots[col]) slots[col] = [];
+                slots[col].push(c);
+            });
+
+            result = { coloring, adj, slots, numColors };
+
+            let conflictPairs = 0;
+            courses.forEach(c => conflictPairs += adj[c].size);
+            conflictPairs /= 2;
+            document.getElementById('s-exams').textContent = courses.length;
+            document.getElementById('s-slots').textContent = numColors;
+            document.getElementById('s-conflicts').textContent = conflictPairs;
+            document.getElementById('s-students').textContent = students.length;
+
+            renderSchedule();
+            renderColorTable();
+            renderMatrix();
+            renderAnalysis();
+            switchTab('schedule');
+        }
+
+        // ───── SCHEDULE TAB ─────
+        function renderSchedule() {
+            const { slots, numColors } = result;
+            let html = '';
+            for (let i = 0; i < numColors; i++) {
+                const slotName = SLOT_NAMES[i] || `Slot ${i + 1}`;
+                const color = COLORS[i % COLORS.length];
+                const pills = (slots[i] || []).map(c => `<span class="slot-pill" style="background:${color}">${c}</span>`).join('');
+                html += `<div class="schedule-row">
+      <span class="slot-label">${slotName}</span>
+      <div class="slot-pills">${pills}</div>
+    </div>`;
+            }
+            document.getElementById('schedule-content').innerHTML = html;
+        }
+
+        // ───── COLOR TABLE ─────
+        function renderColorTable() {
+            const { coloring, adj, numColors } = result;
+            let rows = courses.map(c => {
+                const col = coloring[c];
+                const color = COLORS[col % COLORS.length];
+                const colorName = COLOR_NAMES[col % COLOR_NAMES.length];
+                const slotName = SLOT_NAMES[col] || `Slot ${col + 1}`;
+                const conflicts = [...adj[c]].join(', ') || 'None';
+                return `<tr>
+      <td><strong>${c}</strong></td>
+      <td><span class="color-dot" style="background:${color}"></span>${colorName}</td>
+      <td><span class="time-badge">${slotName}</span></td>
+      <td class="conflict-list">${conflicts}</td>
+    </tr>`;
+            }).join('');
+
+            document.getElementById('color-table-content').innerHTML = `
+    <table class="color-table">
+      <thead><tr><th>Course</th><th>Color (slot)</th><th>Time slot</th><th>Conflicts with</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+            renderMatrix();
+        }
+
+        // ───── MATRIX ─────
+        function renderMatrix() {
+            const { adj } = result;
+            const n = courses.length;
+            let header = '<tr><th></th>' + courses.map(c => `<th title="${c}">${c.slice(0, 4)}</th>`).join('') + '</tr>';
+            let body = courses.map((r, ri) =>
+                '<tr><th>' + r.slice(0, 4) + '</th>' + courses.map((c, ci) => {
+                    if (ri === ci) return '<td class="self">—</td>';
+                    return adj[r].has(c) ? '<td class="conflict">✕</td>' : '<td class="none">·</td>';
+                }).join('') + '</tr>'
+            ).join('');
+            document.getElementById('matrix-content').innerHTML = `
+    <div class="matrix-wrap"><table class="matrix"><thead>${header}</thead><tbody>${body}</tbody></table></div>`;
+        }
+
+        // ───── GRAPH ─────
+        function drawGraph() {
+            const canvas = document.getElementById('conflict-canvas');
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            ctx.clearRect(0, 0, W, H);
+
+            const { adj, coloring } = result;
+            const n = courses.length;
+            const cx = W / 2, cy = H / 2;
+            const R = Math.min(W, H) * 0.37;
+            const nodeR = 28;
+
+            const pos = {};
+            courses.forEach((c, i) => {
+                const angle = (2 * Math.PI * i / n) - Math.PI / 2;
+                pos[c] = { x: cx + R * Math.cos(angle), y: cy + R * Math.sin(angle) };
+            });
+
+            const drawn = new Set();
+            courses.forEach(c => {
+                adj[c].forEach(nb => {
+                    const key = [c, nb].sort().join('|');
+                    if (drawn.has(key)) return;
+                    drawn.add(key);
+                    ctx.beginPath();
+                    ctx.moveTo(pos[c].x, pos[c].y);
+                    ctx.lineTo(pos[nb].x, pos[nb].y);
+                    ctx.strokeStyle = 'rgba(255,111,145,0.35)';
+                    ctx.lineWidth = 1.5;
+                    ctx.setLineDash([5, 4]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                });
+            });
+
+            courses.forEach(c => {
+                const { x, y } = pos[c];
+                const col = coloring[c];
+                const color = COLORS[col % COLORS.length];
+
+                ctx.beginPath();
+                ctx.arc(x, y, nodeR, 0, 2 * Math.PI);
+                ctx.fillStyle = color + '33';
+                ctx.fill();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                ctx.fillStyle = '#fff';
+                ctx.font = '600 11px DM Sans, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const label = c.length > 6 ? c.slice(0, 5) + '…' : c;
+                ctx.fillText(label, x, y);
+            });
+
+            const numColors = result.numColors;
+            const legendHtml = Array.from({ length: numColors }, (_, i) => {
+                const color = COLORS[i % COLORS.length];
+                const name = COLOR_NAMES[i % COLOR_NAMES.length];
+                const members = courses.filter(c => result.coloring[c] === i).join(', ');
+                return `<div class="legend-item"><span class="legend-dot" style="background:${color}"></span>${name}: ${members}</div>`;
+            }).join('');
+            document.getElementById('graph-legend').innerHTML = legendHtml;
+
+            let conflictPairs = 0;
+            courses.forEach(c => conflictPairs += adj[c].size);
+            conflictPairs /= 2;
+            document.getElementById('graph-info').textContent =
+                `${courses.length} exams · ${conflictPairs} conflict pairs · ${numColors} colors (time slots) needed`;
+        }
+
+        // ───── ANALYSIS ─────
+        function renderAnalysis() {
+            const { numColors } = result;
+            const before = courses.length;
+            const saved = before - numColors;
+            const pct = Math.round(saved / before * 100);
+
+            document.getElementById('before-after').innerHTML = `
+    <div class="ba-box">
+      <div class="ba-val" style="color:var(--accent2)">${before}</div>
+      <div class="ba-label">Slots without optimization<br>(one slot per exam)</div>
+    </div>
+    <div class="ba-arrow">→</div>
+    <div class="ba-box highlight">
+      <div class="ba-val" style="color:#2ecf9a">${numColors}</div>
+      <div class="ba-label">Slots after graph coloring</div>
+      <div class="saving-badge">↘ ${saved} slots saved (${pct}% reduction)</div>
+    </div>`;
+        }
+
+        // ───── INIT ─────
+        renderCourses();
+        renderStudents();
+
+        document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    </script>
+</body>
+
+</html>
