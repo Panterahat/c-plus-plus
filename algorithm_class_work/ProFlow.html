@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0f14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ProFlow</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f14;
+    --surface: #17171f;
+    --surface2: #1e1e28;
+    --surface3: #252530;
+    --border: rgba(255,255,255,0.07);
+    --text: #f0f0f5;
+    --text2: #9090a8;
+    --text3: #5a5a70;
+    --accent: #7c6ef5;
+    --accent2: #5de8c1;
+    --accent3: #f5a623;
+    --accent4: #f5647c;
+    --accent5: #64c8f5;
+    --red: #f5647c;
+    --green: #5de8c1;
+    --yellow: #f5a623;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { height:100%; overflow:hidden; background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; }
+
+  /* SPLASH */
+  #splash {
+    position:fixed; inset:0; background:var(--bg); display:flex; flex-direction:column;
+    align-items:center; justify-content:center; z-index:9999; transition:opacity .5s;
+  }
+  #splash .logo { font-family:'Syne',sans-serif; font-size:48px; font-weight:800; letter-spacing:-2px; }
+  #splash .logo span { color:var(--accent); }
+  #splash .tagline { color:var(--text2); font-size:14px; margin-top:8px; letter-spacing:2px; text-transform:uppercase; }
+  #splash .bar { width:120px; height:3px; background:var(--surface3); border-radius:2px; margin-top:40px; overflow:hidden; }
+  #splash .bar-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:2px; animation:load 1.2s ease forwards; }
+  @keyframes load { from{width:0} to{width:100%} }
+
+  /* APP SHELL */
+  #app { height:100%; display:flex; flex-direction:column; }
+
+  /* TOP BAR */
+  .topbar {
+    padding:16px 20px 12px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid var(--border);
+    background:var(--bg);
+    position:relative; z-index:10;
+    flex-shrink:0;
+  }
+.topbar-title { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; letter-spacing:-0.5px; }
+  .topbar-title span { color:var(--accent); }
+  .topbar-right { display:flex; gap:8px; align-items:center; }
+  .topbar-date { font-size:12px; color:var(--text2); }
+  .icon-btn { width:36px; height:36px; border-radius:10px; border:none; background:var(--surface2); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; transition:background .2s; }
+  .icon-btn:active { background:var(--surface3); }
+
+  /* CONTENT */
+  .content { flex:1; overflow:hidden; position:relative; }
+  .screen { position:absolute; inset:0; overflow-y:auto; padding:16px 16px 80px; display:none; animation:fadeUp .25s ease; }
+  .screen.active { display:block; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    display:flex; background:var(--surface); border-top:1px solid var(--border);
+    padding:8px 0 max(8px, env(safe-area-inset-bottom));
+    flex-shrink:0; position:relative; z-index:10;
+  }
+  .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; padding:4px 0; transition:all .2s; }
+  .nav-item .nav-icon { font-size:20px; transition:transform .2s; }
+  .nav-item .nav-label { font-size:9px; color:var(--text3); letter-spacing:.5px; text-transform:uppercase; font-weight:500; }
+  .nav-item.active .nav-icon { transform:translateY(-2px); }
+  .nav-item.active .nav-label { color:var(--accent); }
+  .nav-item:nth-child(1).active .nav-icon { filter:drop-shadow(0 0 6px var(--accent)); }
+  .nav-item:nth-child(2).active .nav-icon { filter:drop-shadow(0 0 6px var(--accent2)); }
+  .nav-item:nth-child(3).active .nav-icon { filter:drop-shadow(0 0 6px var(--accent3)); }
+  .nav-item:nth-child(4).active .nav-icon { filter:drop-shadow(0 0 6px var(--accent4)); }
+  .nav-item:nth-child(5).active .nav-icon { filter:drop-shadow(0 0 6px var(--accent5)); }
+  .nav-item:nth-child(6).active .nav-icon { filter:drop-shadow(0 0 6px var(--green)); }
+  .nav-item:nth-child(7).active .nav-icon { filter:drop-shadow(0 0 6px var(--yellow)); }
+
+  /* CARDS */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:12px; }
+  .card-sm { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; margin-bottom:8px; }
+  .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .section-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+  .btn-add { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:opacity .2s; }
+  .btn-add:active { opacity:.8; }
+
+  /* PILLS */
+  .pill { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:500; }
+  .pill-accent { background:rgba(124,110,245,.18); color:var(--accent); }
+  .pill-green { background:rgba(93,232,193,.15); color:var(--accent2); }
+  .pill-red { background:rgba(245,100,124,.15); color:var(--red); }
+  .pill-yellow { background:rgba(245,166,35,.15); color:var(--yellow); }
+
+  /* INPUTS */
+  .input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; color:var(--text); font-size:14px; font-family:'DM Sans',sans-serif; outline:none; transition:border-color .2s; }
+  .input:focus { border-color:var(--accent); }
+  .input::placeholder { color:var(--text3); }
+  select.input { cursor:pointer; }
+  .label { font-size:12px; color:var(--text2); margin-bottom:6px; display:block; font-weight:500; }
+  .form-row { margin-bottom:14px; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+/* MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:100; display:none; align-items:flex-end; backdrop-filter:blur(4px); }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--surface); border-radius:24px 24px 0 0; padding:24px 20px; width:100%; max-height:85vh; overflow-y:auto; animation:slideUp .3s cubic-bezier(.2,.9,.3,1); }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  .modal-handle { width:40px; height:4px; background:var(--surface3); border-radius:2px; margin:0 auto 20px; }
+  .modal-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:20px; }
+  .modal-footer { display:flex; gap:10px; margin-top:20px; }
+  .btn-primary { flex:1; background:var(--accent); color:#fff; border:none; border-radius:var(--radius-sm); padding:14px; font-size:15px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:opacity .2s; }
+  .btn-primary:active { opacity:.8; }
+  .btn-secondary { flex:1; background:var(--surface2); color:var(--text); border:none; border-radius:var(--radius-sm); padding:14px; font-size:15px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; }
+
+  /* ===== DASHBOARD ===== */
+  .greeting { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; line-height:1.2; margin-bottom:4px; }
+  .greeting-sub { color:var(--text2); font-size:14px; margin-bottom:20px; }
+  .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; }
+  .stat-card .stat-num { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; line-height:1; }
+  .stat-card .stat-label { font-size:11px; color:var(--text2); margin-top:4px; text-transform:uppercase; letter-spacing:.5px; }
+  .stat-card .stat-icon { font-size:20px; margin-bottom:6px; }
+  .progress-ring { width:56px; height:56px; }
+  .quick-actions { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px; }
+  .qa-btn { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 8px; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; transition:all .2s; }
+  .qa-btn:active { background:var(--surface2); transform:scale(.96); }
+  .qa-btn .qa-icon { font-size:22px; }
+  .qa-btn .qa-label { font-size:10px; color:var(--text2); text-align:center; }
+  .today-list .today-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .today-list .today-item:last-child { border:none; }
+  .today-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .today-time { font-size:11px; color:var(--text2); width:38px; flex-shrink:0; }
+  .today-text { font-size:13px; flex:1; }
+
+  /* ===== DAILY PLANNER ===== */
+  .date-strip { display:flex; gap:8px; overflow-x:auto; padding-bottom:12px; margin-bottom:16px; scrollbar-width:none; }
+  .date-strip::-webkit-scrollbar { display:none; }
+  .date-pill { flex-shrink:0; width:52px; height:64px; border-radius:14px; background:var(--surface); border:1px solid var(--border); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; gap:2px; transition:all .2s; }
+  .date-pill.today { border-color:var(--accent); background:rgba(124,110,245,.1); }
+  .date-pill.selected { background:var(--accent); border-color:var(--accent); }
+  .date-pill .dp-day { font-size:10px; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
+  .date-pill.selected .dp-day { color:rgba(255,255,255,.8); }
+  .date-pill .dp-num { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; line-height:1; }
+  .time-slot { display:flex; gap:12px; margin-bottom:8px; min-height:60px; }
+  .time-label { width:40px; font-size:11px; color:var(--text3); text-align:right; padding-top:4px; flex-shrink:0; }
+  .time-line { width:1px; background:var(--border); flex-shrink:0; }
+  .time-events { flex:1; }
+  .event-block { background:var(--surface); border-left:3px solid var(--accent); border-radius:0 var(--radius-sm) var(--radius-sm) 0; padding:8px 12px; margin-bottom:6px; cursor:pointer; transition:all .2s; }
+  .event-block:active { opacity:.8; }
+  .event-block.done { opacity:.5; text-decoration:line-through; }
+  .event-title { font-size:13px; font-weight:500; }
+  .event-desc { font-size:11px; color:var(--text2); margin-top:2px; }
+  .empty-state { text-align:center; padding:40px 20px; color:var(--text3); }
+  .empty-state .empty-icon { font-size:48px; margin-bottom:12px; }
+  .empty-state p { font-size:14px; }
+
+  /* ===== TASKS ===== */
+  .filter-tabs { display:flex; gap:6px; margin-bottom:14px; overflow-x:auto; scrollbar-width:none; padding-bottom:4px; }
+  .filter-tabs::-webkit-scrollbar { display:none; }
+  .filter-tab { flex-shrink:0; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:500; border:1px solid var(--border); background:var(--surface); color:var(--text2); cursor:pointer; transition:all .2s; }
+  .filter-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .task-item { display:flex; align-items:flex-start; gap:12px; padding:12px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:8px; cursor:pointer; transition:all .2s; }
+  .task-item:active { background:var(--surface2); }
+  .task-item.done { opacity:.55; }
+  .task-check { width:22px; height:22px; border-radius:6px; border:2px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; margin-top:1px; transition:all .2s; cursor:pointer; }
+  .task-check.checked { background:var(--accent2); border-color:var(--accent2); }
+  .task-check.checked::after { content:'✓'; font-size:12px; color:#fff; font-weight:700; }
+  .task-body { flex:1; min-width:0; }
+  .task-title { font-size:14px; font-weight:500; }
+  .task-meta { display:flex; gap:6px; align-items:center; margin-top:4px; flex-wrap:wrap; }
+  .task-due { font-size:11px; color:var(--text3); }
+  .priority-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .p0 { background:#9090a8; }
+  .p1 { background:var(--yellow); }
+  .p2 { background:var(--red); }
+  .task-delete { padding:4px 8px; color:var(--text3); font-size:16px; cursor:pointer; }
+
+  /* ===== COUNTER ===== */
+  .counter-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .counter-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; }
+  .counter-name { font-size:12px; color:var(--text2); margin-bottom:8px; text-transform:uppercase; letter-spacing:.5px; }
+  .counter-val { font-family:'Syne',sans-serif; font-size:48px; font-weight:800; line-height:1; }
+  .counter-controls { display:flex; gap:8px; justify-content:center; margin-top:12px; }
+  .c-btn { width:40px; height:40px; border-radius:10px; border:none; font-size:20px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+  .c-btn:active { transform:scale(.9); }
+  .c-btn-minus { background:rgba(245,100,124,.15); color:var(--red); }
+  .c-btn-plus { background:rgba(93,232,193,.15); color:var(--green); }
+  .c-btn-reset { background:var(--surface2); color:var(--text2); font-size:14px; }
+  .counter-step { font-size:10px; color:var(--text3); margin-top:6px; }
+
+  /* ===== MONEY ===== */
+  .money-summary { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .money-card { border-radius:var(--radius); padding:14px; }
+  .money-card.lent { background:rgba(93,232,193,.1); border:1px solid rgba(93,232,193,.2); }
+  .money-card.borrowed { background:rgba(245,100,124,.1); border:1px solid rgba(245,100,124,.2); }
+  .money-card .mc-label { font-size:11px; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+  .money-card.lent .mc-label { color:var(--green); }
+  .money-card.borrowed .mc-label { color:var(--red); }
+  .money-card .mc-amount { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; }
+  .money-card.lent .mc-amount { color:var(--green); }
+  .money-card.borrowed .mc-amount { color:var(--red); }
+  .money-item { display:flex; align-items:center; gap:12px; padding:12px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:8px; }
+  .money-avatar { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:15px; font-weight:700; flex-shrink:0; }
+  .money-avatar.lent { background:rgba(93,232,193,.15); color:var(--green); }
+  .money-avatar.borrowed { background:rgba(245,100,124,.15); color:var(--red); }
+  .money-info { flex:1; }
+  .money-name { font-size:14px; font-weight:500; }
+  .money-note { font-size:11px; color:var(--text2); margin-top:2px; }
+  .money-amount { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+  .money-amount.lent { color:var(--green); }
+  .money-amount.borrowed { color:var(--red); }
+  .money-settled { opacity:.4; }
+  .settle-btn { font-size:11px; padding:4px 10px; border-radius:6px; background:var(--surface2); border:none; color:var(--text2); cursor:pointer; }
+
+  /* ===== ALARMS ===== */
+  .alarm-item { display:flex; align-items:center; gap:14px; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:10px; }
+  .alarm-time { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; line-height:1; flex:1; }
+  .alarm-time-ampm { font-size:14px; color:var(--text2); font-family:'DM Sans',sans-serif; font-weight:400; margin-left:4px; }
+  .alarm-info { }
+  .alarm-label { font-size:12px; color:var(--text2); }
+  .alarm-days { font-size:10px; color:var(--text3); margin-top:2px; }
+  .alarm-toggle { position:relative; width:46px; height:26px; flex-shrink:0; }
+  .alarm-toggle input { opacity:0; width:0; height:0; }
+  .toggle-slider { position:absolute; inset:0; background:var(--surface3); border-radius:13px; cursor:pointer; transition:.3s; }
+  .toggle-slider:before { content:''; position:absolute; height:20px; width:20px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
+  input:checked + .toggle-slider { background:var(--accent); }
+  input:checked + .toggle-slider:before { transform:translateX(20px); }
+  .alarm-delete { padding:6px; color:var(--text3); cursor:pointer; font-size:18px; }
+  .days-selector { display:flex; gap:6px; justify-content:center; }
+  .day-btn { width:36px; height:36px; border-radius:10px; border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-size:11px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+  .day-btn.selected { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  /* ===== ROADMAP ===== */
+  .roadmap-item { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:10px; cursor:pointer; transition:all .2s; }
+  .roadmap-item:active { background:var(--surface2); }
+  .roadmap-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:4px; }
+  .roadmap-desc { font-size:12px; color:var(--text2); margin-bottom:10px; }
+  .roadmap-progress { height:4px; background:var(--surface3); border-radius:2px; overflow:hidden; }
+  .roadmap-progress-fill { height:100%; border-radius:2px; transition:width .5s; }
+  .roadmap-meta { display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+  .roadmap-steps-count { font-size:11px; color:var(--text2); }
+  /* Roadmap Detail */
+  .step-timeline { position:relative; padding-left:28px; }
+  .step-line { position:absolute; left:10px; top:16px; bottom:0; width:2px; background:var(--border); }
+  .step-item { position:relative; padding:0 0 20px 20px; }
+  .step-dot { position:absolute; left:-18px; top:4px; width:14px; height:14px; border-radius:50%; border:2px solid var(--border); background:var(--bg); transition:all .2s; cursor:pointer; }
+  .step-dot.done { background:var(--green); border-color:var(--green); }
+  .step-dot.active { background:var(--accent); border-color:var(--accent); box-shadow:0 0 0 4px rgba(124,110,245,.2); }
+  .step-content { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; }
+  .step-content-title { font-size:13px; font-weight:500; }
+  .step-content-desc { font-size:11px; color:var(--text2); margin-top:2px; }
+  .step-content.done { opacity:.6; }
+  .back-btn { display:flex; align-items:center; gap:8px; color:var(--text2); font-size:13px; margin-bottom:16px; cursor:pointer; }
+
+  /* ===== HABITS ===== */
+  .habit-item { display:flex; align-items:center; gap:12px; padding:12px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:8px; }
+  .habit-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .habit-info { flex:1; }
+  .habit-name { font-size:14px; font-weight:500; }
+  .habit-streak { font-size:11px; color:var(--text2); margin-top:2px; }
+  .habit-check { width:32px; height:32px; border-radius:8px; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; flex-shrink:0; }
+  .habit-check.done { background:var(--green); border-color:var(--green); }
+  .habit-check.done::after { content:'✓'; font-size:14px; color:#fff; font-weight:700; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width:4px; height:4px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--surface3); border-radius:2px; }
+
+  /* NOTIFICATION TOAST */
+  #toast { position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-80px); background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 20px; font-size:13px; z-index:9999; transition:transform .3s cubic-bezier(.2,.9,.3,1); white-space:nowrap; box-shadow:var(--shadow); }
+  #toast.show { transform:translateX(-50%) translateY(0); }
+
+  .color-picker { display:flex; gap:8px; }
+  .color-opt { width:28px; height:28px; border-radius:8px; cursor:pointer; border:2px solid transparent; transition:.2s; }
+  .color-opt.selected { border-color:#fff; transform:scale(1.15); }
+
+  textarea.input { resize:none; min-height:80px; }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="logo">Pro<span>Flow</span></div>
+  <div class="tagline">Your productivity, elevated</div>
+  <div class="bar"><div class="bar-fill"></div></div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-title">Pro<span>Flow</span></div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="topbarDate"></div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="screen active" id="screen-dash">
+      <div class="greeting" id="greeting">Good morning 👋</div>
+      <div class="greeting-sub" id="greetingSub">Here's your day at a glance</div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-num" id="dashTasks">0</div>
+          <div class="stat-label">Pending Tasks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-num" id="dashPlans">0</div>
+          <div class="stat-label">Today's Events</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔢</div>
+          <div class="stat-num" id="dashCounters">0</div>
+          <div class="stat-label">Counters</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-num" id="dashMoney">0</div>
+          <div class="stat-label">Money Records</div>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <div class="qa-btn" onclick="addTaskQuick()"><div class="qa-icon">➕</div><div class="qa-label">Add Task</div></div>
+        <div class="qa-btn" onclick="addPlanQuick()"><div class="qa-icon">📝</div><div class="qa-label">Plan Day</div></div>
+        <div class="qa-btn" onclick="addAlarmQuick()"><div class="qa-icon">⏰</div><div class="qa-label">Set Alarm</div></div>
+        <div class="qa-btn" onclick="navTo('habits')"><div class="qa-icon">🔥</div><div class="qa-label">Habits</div></div>
+      </div>
+
+      <div class="card">
+        <div class="section-header">
+          <div class="section-title">Today's Schedule</div>
+        </div>
+        <div class="today-list" id="dashTodayList">
+          <div class="empty-state" style="padding:20px 0"><div class="empty-icon">📅</div><p>No events today</p></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-header">
+          <div class="section-title">Upcoming Tasks</div>
+        </div>
+        <div id="dashTaskList">
+          <div class="empty-state" style="padding:20px 0"><div class="empty-icon">✅</div><p>All clear!</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAILY PLANNER -->
+    <div class="screen" id="screen-planner">
+      <div class="section-header">
+        <div class="section-title">Daily Planner</div>
+        <button class="btn-add" onclick="openPlannerModal()">+ Add</button>
+      </div>
+      <div class="date-strip" id="dateStrip"></div>
+      <div id="plannerEvents"></div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="screen" id="screen-tasks">
+      <div class="section-header">
+        <div class="section-title">Task Manager</div>
+        <button class="btn-add" onclick="openTaskModal()">+ New</button>
+      </div>
+      <div class="filter-tabs" id="taskFilters">
+        <div class="filter-tab active" data-filter="all" onclick="setTaskFilter('all',this)">All</div>
+        <div class="filter-tab" data-filter="active" onclick="setTaskFilter('active',this)">Active</div>
+        <div class="filter-tab" data-filter="done" onclick="setTaskFilter('done',this)">Done</div>
+        <div class="filter-tab" data-filter="high" onclick="setTaskFilter('high',this)">🔴 High</div>
+        <div class="filter-tab" data-filter="work" onclick="setTaskFilter('work',this)">Work</div>
+        <div class="filter-tab" data-filter="personal" onclick="setTaskFilter('personal',this)">Personal</div>
+      </div>
+      <div id="taskList"></div>
+    </div>
+
+    <!-- COUNTER -->
+    <div class="screen" id="screen-counter">
+      <div class="section-header">
+        <div class="section-title">Counters</div>
+        <button class="btn-add" onclick="openCounterModal()">+ New</button>
+      </div>
+      <div class="counter-grid" id="counterGrid"></div>
+    </div>
+
+    <!-- MONEY -->
+    <div class="screen" id="screen-money">
+      <div class="section-header">
+        <div class="section-title">Money Tracker</div>
+        <button class="btn-add" onclick="openMoneyModal()">+ Add</button>
+      </div>
+      <div class="money-summary">
+        <div class="money-card lent">
+          <div class="mc-label">You Lent</div>
+          <div class="mc-amount" id="totalLent">$0</div>
+        </div>
+        <div class="money-card borrowed">
+          <div class="mc-label">You Owe</div>
+          <div class="mc-amount" id="totalOwed">$0</div>
+        </div>
+      </div>
+      <div class="filter-tabs">
+        <div class="filter-tab active" onclick="setMoneyFilter('all',this)">All</div>
+        <div class="filter-tab" onclick="setMoneyFilter('lent',this)">Lent</div>
+        <div class="filter-tab" onclick="setMoneyFilter('borrowed',this)">Borrowed</div>
+        <div class="filter-tab" onclick="setMoneyFilter('pending',this)">Pending</div>
+        <div class="filter-tab" onclick="setMoneyFilter('settled',this)">Settled</div>
+      </div>
+      <div id="moneyList"></div>
+    </div>
+
+    <!-- ALARMS -->
+    <div class="screen" id="screen-alarms">
+      <div class="section-header">
+        <div class="section-title">Alarms</div>
+        <button class="btn-add" onclick="openAlarmModal()">+ New</button>
+      </div>
+      <div id="alarmList"></div>
+    </div>
+
+    <!-- ROADMAP -->
+    <div class="screen" id="screen-roadmap">
+      <div id="roadmapList-view">
+        <div class="section-header">
+          <div class="section-title">Roadmaps</div>
+          <button class="btn-add" onclick="openRoadmapModal()">+ New</button>
+        </div>
+        <div id="roadmapList"></div>
+      </div>
+      <div id="roadmapDetail-view" style="display:none"></div>
+    </div>
+
+    <!-- HABITS -->
+    <div class="screen" id="screen-habits">
+      <div class="section-header">
+        <div class="section-title">Habit Tracker</div>
+        <button class="btn-add" onclick="openHabitModal()">+ New</button>
+      </div>
+      <div style="text-align:center;margin-bottom:16px">
+        <span style="font-size:13px;color:var(--text2)">Today, </span>
+        <span style="font-size:13px;color:var(--text)" id="habitDateLabel"></span>
+      </div>
+      <div id="habitList"></div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="navTo('dash')">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">Home</div>
+    </div>
+    <div class="nav-item" onclick="navTo('planner')">
+      <div class="nav-icon">📅</div>
+      <div class="nav-label">Planner</div>
+    </div>
+    <div class="nav-item" onclick="navTo('tasks')">
+      <div class="nav-icon">✅</div>
+      <div class="nav-label">Tasks</div>
+    </div>
+    <div class="nav-item" onclick="navTo('counter')">
+      <div class="nav-icon">🔢</div>
+      <div class="nav-label">Counter</div>
+    </div>
+    <div class="nav-item" onclick="navTo('money')">
+      <div class="nav-icon">💰</div>
+      <div class="nav-label">Money</div>
+    </div>
+    <div class="nav-item" onclick="navTo('alarms')">
+      <div class="nav-icon">⏰</div>
+      <div class="nav-label">Alarms</div>
+    </div>
+    <div class="nav-item" onclick="navTo('roadmap')">
+      <div class="nav-icon">🗺️</div>
+      <div class="nav-label">Roadmap</div>
+    </div>
+    <div class="nav-item" onclick="navTo('habits')">
+      <div class="nav-icon">🔥</div>
+      <div class="nav-label">Habits</div>
+    </div>
+  </nav>
+</div><!-- /app -->
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- TASK MODAL -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="taskModalTitle">New Task</div>
+    <div class="form-row"><label class="label">Title *</label><input class="input" id="taskTitle" placeholder="What needs to be done?"></div>
+    <div class="form-row"><label class="label">Description</label><textarea class="input" id="taskDesc" placeholder="Details..."></textarea></div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label class="label">Category</label>
+        <select class="input" id="taskCategory">
+          <option>Work</option><option>Personal</option><option>Health</option><option>Finance</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="label">Priority</label>
+        <select class="input" id="taskPriority">
+          <option value="0">Low</option><option value="1">Medium</option><option value="2" selected>High</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row"><label class="label">Due Date</label><input class="input" type="date" id="taskDue"></div>
+    <div class="form-row"><label class="label">Reminder</label><input class="input" type="datetime-local" id="taskReminder"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('taskModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveTask()">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLANNER MODAL -->
+<div class="modal-overlay" id="plannerModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Event</div>
+    <div class="form-row"><label class="label">Title *</label><input class="input" id="planTitle" placeholder="Event name"></div>
+    <div class="form-row"><label class="label">Description</label><input class="input" id="planDesc" placeholder="Notes..."></div>
+    <div class="form-grid">
+      <div class="form-row"><label class="label">Time</label><input class="input" type="time" id="planTime"></div>
+      <div class="form-row"><label class="label">Date</label><input class="input" type="date" id="planDate"></div>
+    </div>
+    <div class="form-row">
+      <label class="label">Color</label>
+      <div class="color-picker" id="planColorPicker"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('plannerModal')">Cancel</button>
+      <button class="btn-primary" onclick="savePlan()">Add Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- COUNTER MODAL -->
+<div class="modal-overlay" id="counterModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">New Counter</div>
+    <div class="form-row"><label class="label">Name *</label><input class="input" id="counterName" placeholder="Counter name"></div>
+    <div class="form-grid">
+      <div class="form-row"><label class="label">Step</label><input class="input" type="number" id="counterStep" value="1"></div>
+      <div class="form-row"><label class="label">Start Value</label><input class="input" type="number" id="counterStart" value="0"></div>
+    </div>
+    <div class="form-row">
+      <label class="label">Color</label>
+      <div class="color-picker" id="counterColorPicker"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('counterModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveCounter()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- MONEY MODAL -->
+<div class="modal-overlay" id="moneyModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Record</div>
+    <div class="form-row"><label class="label">Person's Name *</label><input class="input" id="moneyPerson" placeholder="Name"></div>
+    <div class="form-grid">
+      <div class="form-row"><label class="label">Amount *</label><input class="input" type="number" id="moneyAmount" placeholder="0.00"></div>
+      <div class="form-row">
+        <label class="label">Type</label>
+        <select class="input" id="moneyType">
+          <option value="lent">I Lent</option>
+          <option value="borrowed">I Borrowed</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row"><label class="label">Note</label><input class="input" id="moneyNote" placeholder="For what?"></div>
+    <div class="form-row"><label class="label">Due Date (optional)</label><input class="input" type="date" id="moneyDue"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('moneyModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveMoney()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ALARM MODAL -->
+<div class="modal-overlay" id="alarmModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Set Alarm</div>
+    <div class="form-row"><label class="label">Time *</label><input class="input" type="time" id="alarmTime"></div>
+    <div class="form-row"><label class="label">Label</label><input class="input" id="alarmLabel" placeholder="Alarm label"></div>
+    <div class="form-row">
+      <label class="label">Repeat</label>
+      <div class="days-selector" id="daySelector">
+        <div class="day-btn" data-day="0" onclick="toggleDay(this)">Su</div>
+        <div class="day-btn" data-day="1" onclick="toggleDay(this)">Mo</div>
+        <div class="day-btn" data-day="2" onclick="toggleDay(this)">Tu</div>
+        <div class="day-btn" data-day="3" onclick="toggleDay(this)">We</div>
+        <div class="day-btn" data-day="4" onclick="toggleDay(this)">Th</div>
+        <div class="day-btn" data-day="5" onclick="toggleDay(this)">Fr</div>
+        <div class="day-btn" data-day="6" onclick="toggleDay(this)">Sa</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('alarmModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveAlarm()">Set Alarm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROADMAP MODAL -->
+<div class="modal-overlay" id="roadmapModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">New Roadmap</div>
+    <div class="form-row"><label class="label">Title *</label><input class="input" id="roadmapTitle" placeholder="Goal name"></div>
+    <div class="form-row"><label class="label">Description</label><textarea class="input" id="roadmapDesc" placeholder="What do you want to achieve?"></textarea></div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label class="label">Category</label>
+        <select class="input" id="roadmapCategory">
+          <option>Career</option><option>Learning</option><option>Health</option><option>Finance</option><option>Personal</option>
+        </select>
+      </div>
+      <div class="form-row"><label class="label">Target Date</label><input class="input" type="date" id="roadmapTarget"></div>
+    </div>
+    <div class="form-row">
+      <label class="label">Color</label>
+      <div class="color-picker" id="roadmapColorPicker"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('roadmapModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveRoadmap()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROADMAP STEP MODAL -->
+<div class="modal-overlay" id="stepModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Step</div>
+    <div class="form-row"><label class="label">Step Title *</label><input class="input" id="stepTitle" placeholder="Milestone name"></div>
+    <div class="form-row"><label class="label">Description</label><input class="input" id="stepDesc" placeholder="Details..."></div>
+    <div class="form-row"><label class="label">Target Date</label><input class="input" type="date" id="stepDate"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('stepModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveStep()">Add Step</button>
+    </div>
+  </div>
+</div>
+
+<!-- HABIT MODAL -->
+<div class="modal-overlay" id="habitModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">New Habit</div>
+    <div class="form-row"><label class="label">Name *</label><input class="input" id="habitName" placeholder="Habit name"></div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label class="label">Icon</label>
+        <select class="input" id="habitIcon">
+          <option>💪</option><option>🧘</option><option>📚</option><option>🏃</option><option>💧</option>
+          <option>🥗</option><option>😴</option><option>🧹</option><option>✍️</option><option>🎯</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="label">Frequency</label>
+        <select class="input" id="habitFreq">
+          <option value="daily">Daily</option><option value="weekdays">Weekdays</option><option value="weekends">Weekends</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="label">Color</label>
+      <div class="color-picker" id="habitColorPicker"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('habitModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveHabit()">Create</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== STATE =====================
+const STATE = {
+  tasks: [], plans: [], counters: [], money: [], alarms: [], roadmaps: [], steps: [], habits: [],
+  selectedDate: '', activeRoadmap: null, taskFilter: 'all', moneyFilter: 'all'
+};
+const COLORS = ['#7c6ef5','#5de8c1','#f5a623','#f5647c','#64c8f5','#c87cf5','#f57c64'];
+let selectedColors = { plan:'#7c6ef5', counter:'#7c6ef5', roadmap:'#7c6ef5', habit:'#7c6ef5' };
+
+// ===================== STORAGE =====================
+function save() { localStorage.setItem('proflow_state', JSON.stringify(STATE)); }
+function load() {
+  const d = localStorage.getItem('proflow_state');
+  if (d) {
+    const p = JSON.parse(d);
+    Object.keys(p).forEach(k => { if (STATE.hasOwnProperty(k)) STATE[k] = p[k]; });
+  }
+}
+
+// ===================== INIT =====================
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    document.getElementById('splash').style.opacity = '0';
+    setTimeout(() => { document.getElementById('splash').style.display = 'none'; document.getElementById('app').style.display = 'flex'; }, 500);
+    load();
+    initDates();
+    updateGreeting();
+    renderAll();
+    setupAlarmTicks();
+    // Set defaults
+    const today = new Date();
+    document.getElementById('planDate').value = fmtDate(today);
+    document.getElementById('planTime').value = `${String(today.getHours()).padStart(2,'0')}:00`;
+    document.getElementById('taskDue').value = fmtDate(today);
+    document.getElementById('habitDateLabel').textContent = today.toLocaleDateString('en',{weekday:'long',month:'long',day:'numeric'});
+  }, 1400);
+});
+
+function renderAll() {
+  renderTasks(); renderPlanner(); renderCounters();
+  renderMoney(); renderAlarms(); renderRoadmaps();
+  renderHabits(); renderDashboard();
+  initColorPickers();
+}
+
+// ===================== NAVIGATION =====================
+let currentScreen = 'dash';
+function navTo(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  document.querySelectorAll('.nav-item')[['dash','planner','tasks','counter','money','alarms','roadmap','habits'].indexOf(screen)].classList.add('active');
+  currentScreen = screen;
+  if (screen === 'roadmap') { document.getElementById('roadmapList-view').style.display = 'block'; document.getElementById('roadmapDetail-view').style.display = 'none'; STATE.activeRoadmap = null; }
+  if (screen === 'dash') renderDashboard();
+}
+
+// ===================== DATES =====================
+function fmtDate(d) { return d.toISOString().split('T')[0]; }
+function fmtDisplay(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en',{month:'short',day:'numeric'});
+}
+function initDates() {
+  const strip = document.getElementById('dateStrip');
+  strip.innerHTML = '';
+  const today = new Date();
+  const todayStr = fmtDate(today);
+  if (!STATE.selectedDate) STATE.selectedDate = todayStr;
+  for (let i = -3; i <= 10; i++) {
+    const d = new Date(today); d.setDate(today.getDate() + i);
+    const ds = fmtDate(d);
+    const pill = document.createElement('div');
+    pill.className = 'date-pill' + (ds === todayStr ? ' today' : '') + (ds === STATE.selectedDate ? ' selected' : '');
+    pill.innerHTML = `<div class="dp-day">${d.toLocaleDateString('en',{weekday:'short'})}</div><div class="dp-num">${d.getDate()}</div>`;
+    pill.onclick = () => { STATE.selectedDate = ds; document.getElementById('planDate').value = ds; initDates(); renderPlanner(); };
+    strip.appendChild(pill);
+    if (ds === STATE.selectedDate) setTimeout(() => pill.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'}), 100);
+  }
+  document.getElementById('topbarDate').textContent = today.toLocaleDateString('en',{month:'short',day:'numeric',year:'numeric'});
+}
+function updateGreeting() {
+  const h = new Date().getHours();
+  const g = h < 12 ? 'Good morning 👋' : h < 17 ? 'Good afternoon ☀️' : 'Good evening 🌙';
+  document.getElementById('greeting').textContent = g;
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  document.getElementById('greetingSub').textContent = `${days[new Date().getDay()]} — let's get things done`;
+}
+
+// ===================== DASHBOARD =====================
+function renderDashboard() {
+  const active = STATE.tasks.filter(t => !t.completed).length;
+  const todayStr = fmtDate(new Date());
+  const todayPlans = STATE.plans.filter(p => p.date === todayStr);
+  document.getElementById('dashTasks').textContent = active;
+  document.getElementById('dashPlans').textContent = todayPlans.length;
+  document.getElementById('dashCounters').textContent = STATE.counters.length;
+  document.getElementById('dashMoney').textContent = STATE.money.filter(m => !m.settled).length;
+
+  const list = document.getElementById('dashTodayList');
+  if (todayPlans.length === 0) { list.innerHTML = '<div class="empty-state" style="padding:16px 0"><div class="empty-icon">📅</div><p>No events today</p></div>'; }
+  else {
+    list.innerHTML = todayPlans.sort((a,b) => a.time > b.time ? 1 : -1).slice(0,5).map(p => `
+      <div class="today-item">
+        <div class="today-dot" style="background:${p.color||'var(--accent)'}"></div>
+        <div class="today-time">${p.time}</div>
+        <div class="today-text">${p.title}</div>
+      </div>`).join('');
+  }
+  const taskEl = document.getElementById('dashTaskList');
+  const upcoming = STATE.tasks.filter(t => !t.completed).slice(0,3);
+  if (upcoming.length === 0) { taskEl.innerHTML = '<div class="empty-state" style="padding:16px 0"><div class="empty-icon">✅</div><p>All clear!</p></div>'; }
+  else {
+    taskEl.innerHTML = upcoming.map(t => `
+      <div class="task-item" style="margin-bottom:8px">
+        <div class="priority-dot p${t.priority}" style="margin-top:6px"></div>
+        <div class="task-body"><div class="task-title">${t.title}</div><div class="task-due">${t.category} ${t.due ? '· '+fmtDisplay(t.due) : ''}</div></div>
+      </div>`).join('');
+  }
+}
+
+// ===================== TASKS =====================
+function openTaskModal(task) {
+  document.getElementById('taskModalTitle').textContent = task ? 'Edit Task' : 'New Task';
+  document.getElementById('taskTitle').value = task ? task.title : '';
+  document.getElementById('taskDesc').value = task ? task.description || '' : '';
+  document.getElementById('taskCategory').value = task ? task.category : 'Work';
+  document.getElementById('taskPriority').value = task ? task.priority : '2';
+  document.getElementById('taskDue').value = task ? task.due || '' : fmtDate(new Date());
+  document.getElementById('taskReminder').value = task ? task.reminder || '' : '';
+  document.getElementById('taskModal').dataset.editId = task ? task.id : '';
+  document.getElementById('taskModal').classList.add('open');
+}
+function saveTask() {
+  const title = document.getElementById('taskTitle').value.trim();
+  if (!title) { toast('Please enter a task title'); return; }
+  const editId = document.getElementById('taskModal').dataset.editId;
+  const task = {
+    id: editId ? parseInt(editId) : Date.now(),
+    title, description: document.getElementById('taskDesc').value,
+    category: document.getElementById('taskCategory').value,
+    priority: parseInt(document.getElementById('taskPriority').value),
+    due: document.getElementById('taskDue').value,
+    reminder: document.getElementById('taskReminder').value,
+    completed: false, createdAt: Date.now()
+  };
+  if (editId) { const i = STATE.tasks.findIndex(t => t.id === task.id); if (i >= 0) { task.completed = STATE.tasks[i].completed; STATE.tasks[i] = task; } }
+  else STATE.tasks.unshift(task);
+  save(); renderTasks(); renderDashboard(); closeModal('taskModal');
+  toast(editId ? 'Task updated' : 'Task added ✅');
+  if (task.reminder) scheduleReminderToast(task);
+}
+function setTaskFilter(f, el) {
+  STATE.taskFilter = f;
+  document.querySelectorAll('#taskFilters .filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderTasks();
+}
+function renderTasks() {
+  let tasks = [...STATE.tasks];
+  if (STATE.taskFilter === 'active') tasks = tasks.filter(t => !t.completed);
+  else if (STATE.taskFilter === 'done') tasks = tasks.filter(t => t.completed);
+  else if (STATE.taskFilter === 'high') tasks = tasks.filter(t => t.priority === 2 && !t.completed);
+  else if (STATE.taskFilter === 'work') tasks = tasks.filter(t => t.category === 'Work');
+  else if (STATE.taskFilter === 'personal') tasks = tasks.filter(t => t.category === 'Personal');
+  const el = document.getElementById('taskList');
+  if (tasks.length === 0) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div><p>No tasks here</p></div>'; return; }
+  el.innerHTML = tasks.map(t => `
+    <div class="task-item ${t.completed ? 'done' : ''}">
+      <div class="task-check ${t.completed ? 'checked' : ''}" onclick="toggleTask(${t.id})"></div>
+      <div class="task-body" onclick="openTaskModal(${JSON.stringify(t).replace(/"/g,'&quot;')})">
+        <div class="task-title">${t.title}</div>
+        <div class="task-meta">
+          <span class="priority-dot p${t.priority}"></span>
+          <span class="pill pill-accent" style="font-size:10px;padding:2px 7px">${t.category}</span>
+          ${t.due ? `<span class="task-due">📅 ${fmtDisplay(t.due)}</span>` : ''}
+          ${t.priority === 2 ? '<span style="font-size:11px;color:var(--red)">🔴 High</span>' : ''}
+        </div>
+      </div>
+      <div class="task-delete" onclick="deleteTask(${t.id})">🗑</div>
+    </div>`).join('');
+}
+function toggleTask(id) {
+  const t = STATE.tasks.find(t => t.id === id);
+  if (t) { t.completed = !t.completed; save(); renderTasks(); renderDashboard(); toast(t.completed ? 'Task completed! 🎉' : 'Task reopened'); }
+}
+function deleteTask(id) {
+  STATE.tasks = STATE.tasks.filter(t => t.id !== id);
+  save(); renderTasks(); renderDashboard(); toast('Task deleted');
+}
+function addTaskQuick() { navTo('tasks'); setTimeout(() => openTaskModal(), 100); }
+
+// ===================== PLANNER =====================
+function openPlannerModal() {
+  document.getElementById('planTitle').value = '';
+  document.getElementById('planDesc').value = '';
+  document.getElementById('planDate').value = STATE.selectedDate;
+  document.getElementById('plannerModal').classList.add('open');
+}
+function savePlan() {
+  const title = document.getElementById('planTitle').value.trim();
+  if (!title) { toast('Please enter a title'); return; }
+  STATE.plans.push({
+    id: Date.now(), title, description: document.getElementById('planDesc').value,
+    date: document.getElementById('planDate').value,
+    time: document.getElementById('planTime').value || '09:00',
+    color: selectedColors.plan, completed: false
+  });
+  save(); renderPlanner(); renderDashboard(); closeModal('plannerModal'); toast('Event added 📅');
+}
+function renderPlanner() {
+  const el = document.getElementById('plannerEvents');
+  const plans = STATE.plans.filter(p => p.date === STATE.selectedDate).sort((a,b) => a.time > b.time ? 1 : -1);
+  if (plans.length === 0) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><p>No events. Tap + to add one!</p></div>'; return; }
+  const hours = [...new Set(plans.map(p => p.time.split(':')[0]))].sort();
+  el.innerHTML = plans.map(p => `
+    <div class="time-slot">
+      <div class="time-label">${formatTime(p.time)}</div>
+      <div class="time-line" style="background:${p.color}"></div>
+      <div class="time-events" style="flex:1">
+        <div class="event-block ${p.completed ? 'done' : ''}" style="border-color:${p.color}" onclick="togglePlan(${p.id})">
+          <div class="event-title">${p.title}</div>
+          ${p.description ? `<div class="event-desc">${p.description}</div>` : ''}
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            <span style="font-size:10px;color:var(--text3)">${p.completed ? '✓ Done' : '⏰ '+p.time}</span>
+            <span onclick="deletePlan(${p.id});event.stopPropagation()" style="font-size:12px;color:var(--text3);cursor:pointer">🗑</span>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function togglePlan(id) {
+  const p = STATE.plans.find(p => p.id === id);
+  if (p) { p.completed = !p.completed; save(); renderPlanner(); }
+}
+function deletePlan(id) { STATE.plans = STATE.plans.filter(p => p.id !== id); save(); renderPlanner(); renderDashboard(); }
+function formatTime(t) { const [h,m] = t.split(':'); const hr = parseInt(h); return `${hr > 12 ? hr-12 : hr || 12}:${m}${hr >= 12 ? 'pm' : 'am'}`; }
+function addPlanQuick() { navTo('planner'); setTimeout(() => openPlannerModal(), 100); }
+
+// ===================== COUNTERS =====================
+function openCounterModal() {
+  document.getElementById('counterName').value = '';
+  document.getElementById('counterStep').value = '1';
+  document.getElementById('counterStart').value = '0';
+  document.getElementById('counterModal').classList.add('open');
+}
+function saveCounter() {
+  const name = document.getElementById('counterName').value.trim();
+  if (!name) { toast('Please enter a name'); return; }
+  STATE.counters.push({
+    id: Date.now(), name, value: parseInt(document.getElementById('counterStart').value) || 0,
+    step: parseInt(document.getElementById('counterStep').value) || 1,
+    color: selectedColors.counter
+  });
+  save(); renderCounters(); closeModal('counterModal'); toast('Counter created 🔢');
+}
+function renderCounters() {
+  const el = document.getElementById('counterGrid');
+  if (STATE.counters.length === 0) { el.innerHTML = '<div class="empty-state" style="grid-column:span 2"><div class="empty-icon">🔢</div><p>Create your first counter</p></div>'; return; }
+  el.innerHTML = STATE.counters.map(c => `
+    <div class="counter-card">
+      <div class="counter-name">${c.name}</div>
+      <div class="counter-val" style="color:${c.color}">${c.value}</div>
+      <div class="counter-controls">
+        <button class="c-btn c-btn-minus" onclick="adjustCounter(${c.id},-1)">−</button>
+        <button class="c-btn c-btn-reset" onclick="resetCounter(${c.id})">↺</button>
+        <button class="c-btn c-btn-plus" onclick="adjustCounter(${c.id},1)">+</button>
+      </div>
+      <div class="counter-step">step: ${c.step}</div>
+      <div style="text-align:right;margin-top:8px"><span onclick="deleteCounter(${c.id})" style="font-size:12px;color:var(--text3);cursor:pointer">🗑 Delete</span></div>
+    </div>`).join('');
+}
+function adjustCounter(id, dir) {
+  const c = STATE.counters.find(c => c.id === id);
+  if (c) { c.value += dir * c.step; save(); renderCounters(); }
+}
+function resetCounter(id) {
+  const c = STATE.counters.find(c => c.id === id);
+  if (c) { c.value = 0; save(); renderCounters(); }
+}
+function deleteCounter(id) { STATE.counters = STATE.counters.filter(c => c.id !== id); save(); renderCounters(); }
+
+// ===================== MONEY =====================
+function openMoneyModal() {
+  document.getElementById('moneyPerson').value = '';
+  document.getElementById('moneyAmount').value = '';
+  document.getElementById('moneyNote').value = '';
+  document.getElementById('moneyDue').value = '';
+  document.getElementById('moneyModal').classList.add('open');
+}
+function saveMoney() {
+  const person = document.getElementById('moneyPerson').value.trim();
+  const amount = parseFloat(document.getElementById('moneyAmount').value);
+  if (!person || !amount) { toast('Please fill required fields'); return; }
+  STATE.money.push({
+    id: Date.now(), person, amount, type: document.getElementById('moneyType').value,
+    note: document.getElementById('moneyNote').value, due: document.getElementById('moneyDue').value,
+    settled: false, date: new Date().toISOString()
+  });
+  save(); renderMoney(); renderDashboard(); closeModal('moneyModal'); toast('Record saved 💰');
+}
+function setMoneyFilter(f, el) {
+  STATE.moneyFilter = f;
+  document.querySelectorAll('#screen-money .filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderMoney();
+}
+function renderMoney() {
+  let records = [...STATE.money];
+  if (STATE.moneyFilter === 'lent') records = records.filter(m => m.type === 'lent');
+  else if (STATE.moneyFilter === 'borrowed') records = records.filter(m => m.type === 'borrowed');
+  else if (STATE.moneyFilter === 'pending') records = records.filter(m => !m.settled);
+  else if (STATE.moneyFilter === 'settled') records = records.filter(m => m.settled);
+
+  const lentTotal = STATE.money.filter(m => m.type === 'lent' && !m.settled).reduce((s,m) => s + m.amount, 0);
+  const owedTotal = STATE.money.filter(m => m.type === 'borrowed' && !m.settled).reduce((s,m) => s + m.amount, 0);
+  document.getElementById('totalLent').textContent = '$' + lentTotal.toFixed(2);
+  document.getElementById('totalOwed').textContent = '$' + owedTotal.toFixed(2);
+
+  const el = document.getElementById('moneyList');
+  if (records.length === 0) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">💰</div><p>No records found</p></div>'; return; }
+  el.innerHTML = records.map(m => `
+    <div class="money-item ${m.settled ? 'money-settled' : ''}">
+      <div class="money-avatar ${m.type}">${m.person[0].toUpperCase()}</div>
+      <div class="money-info">
+        <div class="money-name">${m.person} ${m.settled ? '<span class="pill pill-green" style="font-size:9px">Settled</span>' : ''}</div>
+        <div class="money-note">${m.note || (m.type === 'lent' ? 'You lent' : 'You borrowed')} ${m.due ? '· Due '+fmtDisplay(m.due) : ''}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="money-amount ${m.type}">${m.type === 'lent' ? '+' : '-'}$${m.amount.toFixed(2)}</div>
+        ${!m.settled ? `<button class="settle-btn" onclick="settleMoney(${m.id})">Settle</button>` : ''}
+        <div onclick="deleteMoney(${m.id})" style="font-size:11px;color:var(--text3);cursor:pointer;margin-top:4px">🗑</div>
+      </div>
+    </div>`).join('');
+}
+function settleMoney(id) {
+  const m = STATE.money.find(m => m.id === id);
+  if (m) { m.settled = true; save(); renderMoney(); toast('Marked as settled ✓'); }
+}
+function deleteMoney(id) { STATE.money = STATE.money.filter(m => m.id !== id); save(); renderMoney(); }
+
+// ===================== ALARMS =====================
+function openAlarmModal() {
+  document.getElementById('alarmTime').value = '';
+  document.getElementById('alarmLabel').value = '';
+  document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('alarmModal').classList.add('open');
+}
+function toggleDay(el) { el.classList.toggle('selected'); }
+function saveAlarm() {
+  const time = document.getElementById('alarmTime').value;
+  if (!time) { toast('Please set a time'); return; }
+  const days = [...document.querySelectorAll('.day-btn.selected')].map(b => b.dataset.day).join('');
+  const [h, m] = time.split(':').map(Number);
+  STATE.alarms.push({
+    id: Date.now(), time, hour: h, minute: m,
+    label: document.getElementById('alarmLabel').value || 'Alarm',
+    days, enabled: true
+  });
+  save(); renderAlarms(); closeModal('alarmModal'); toast('Alarm set ⏰');
+}
+function renderAlarms() {
+  const el = document.getElementById('alarmList');
+  if (STATE.alarms.length === 0) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">⏰</div><p>No alarms set</p></div>'; return; }
+  el.innerHTML = STATE.alarms.map(a => {
+    const [h, m] = a.time.split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const displayH = h > 12 ? h - 12 : h === 0 ? 12 : h;
+    const dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+    const daysStr = a.days ? a.days.split('').map(d => dayNames[parseInt(d)]).join(' ') : 'Once';
+    return `<div class="alarm-item ${!a.enabled ? 'money-settled' : ''}">
+      <div style="flex:1">
+        <div class="alarm-time">${String(displayH).padStart(2,'0')}:${String(m).padStart(2,'0')}<span class="alarm-time-ampm">${ampm}</span></div>
+        <div class="alarm-label">${a.label}</div>
+        <div class="alarm-days">${daysStr}</div>
+      </div>
+      <label class="alarm-toggle"><input type="checkbox" ${a.enabled ? 'checked' : ''} onchange="toggleAlarm(${a.id})"><span class="toggle-slider"></span></label>
+      <div class="alarm-delete" onclick="deleteAlarm(${a.id})">🗑</div>
+    </div>`;
+  }).join('');
+}
+function toggleAlarm(id) {
+  const a = STATE.alarms.find(a => a.id === id);
+  if (a) { a.enabled = !a.enabled; save(); renderAlarms(); toast(a.enabled ? 'Alarm enabled' : 'Alarm disabled'); }
+}
+function deleteAlarm(id) { STATE.alarms = STATE.alarms.filter(a => a.id !== id); save(); renderAlarms(); }
+function addAlarmQuick() { navTo('alarms'); setTimeout(() => openAlarmModal(), 100); }
+function setupAlarmTicks() {
+  setInterval(() => {
+    const now = new Date();
+    const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+    if (s !== 0) return;
+    STATE.alarms.filter(a => a.enabled && a.hour === h && a.minute === m).forEach(a => {
+      const dayOfWeek = now.getDay().toString();
+      if (!a.days || a.days === '' || a.days.includes(dayOfWeek)) {
+        toast(`⏰ ${a.label} — ${formatTime(a.time)}`);
+        try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAA==').play(); } catch(e) {}
+      }
+    });
+  }, 1000);
+}
+
+// ===================== ROADMAP =====================
+function openRoadmapModal() {
+  document.getElementById('roadmapTitle').value = '';
+  document.getElementById('roadmapDesc').value = '';
+  document.getElementById('roadmapTarget').value = '';
+  document.getElementById('roadmapModal').classList.add('open');
+}
+function saveRoadmap() {
+  const title = document.getElementById('roadmapTitle').value.trim();
+  if (!title) { toast('Please enter a title'); return; }
+  STATE.roadmaps.push({
+    id: Date.now(), title, description: document.getElementById('roadmapDesc').value,
+    category: document.getElementById('roadmapCategory').value,
+    target: document.getElementById('roadmapTarget').value,
+    color: selectedColors.roadmap, createdAt: Date.now()
+  });
+  save(); renderRoadmaps(); closeModal('roadmapModal'); toast('Roadmap created 🗺️');
+}
+function renderRoadmaps() {
+  const el = document.getElementById('roadmapList');
+  if (STATE.roadmaps.length === 0) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">🗺️</div><p>Create your first roadmap</p></div>'; return; }
+  el.innerHTML = STATE.roadmaps.map(r => {
+    const steps = STATE.steps.filter(s => s.roadmapId === r.id);
+    const done = steps.filter(s => s.completed).length;
+    const pct = steps.length ? Math.round(done / steps.length * 100) : 0;
+    return `<div class="roadmap-item" onclick="openRoadmapDetail(${r.id})">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="roadmap-title">${r.title}</div>
+          <div class="roadmap-desc">${r.description || r.category}</div>
+        </div>
+        <span class="pill pill-accent">${r.category}</span>
+      </div>
+      <div class="roadmap-progress"><div class="roadmap-progress-fill" style="width:${pct}%;background:${r.color}"></div></div>
+      <div class="roadmap-meta">
+        <span class="roadmap-steps-count">${done}/${steps.length} steps ${pct}%</span>
+        ${r.target ? `<span style="font-size:11px;color:var(--text3)">🎯 ${fmtDisplay(r.target)}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function openRoadmapDetail(id) {
+  STATE.activeRoadmap = id;
+  const r = STATE.roadmaps.find(r => r.id === id);
+  document.getElementById('roadmapList-view').style.display = 'none';
+  const detail = document.getElementById('roadmapDetail-view');
+  detail.style.display = 'block';
+  renderRoadmapDetail(r);
+}
+function renderRoadmapDetail(r) {
+  const steps = STATE.steps.filter(s => s.roadmapId === r.id).sort((a,b) => a.order - b.order);
+  const done = steps.filter(s => s.completed).length;
+  const pct = steps.length ? Math.round(done / steps.length * 100) : 0;
+  document.getElementById('roadmapDetail-view').innerHTML = `
+    <div class="back-btn" onclick="navTo('roadmap')">← Back to Roadmaps</div>
+    <div class="card" style="border-color:${r.color}20;background:${r.color}0a">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800">${r.title}</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:2px">${r.description || ''}</div>
+        </div>
+        <span class="pill pill-accent">${pct}%</span>
+      </div>
+      <div class="roadmap-progress" style="height:6px"><div class="roadmap-progress-fill" style="width:${pct}%;background:${r.color}"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px">
+        <span style="font-size:11px;color:var(--text2)">${done}/${steps.length} milestones</span>
+        ${r.target ? `<span style="font-size:11px;color:var(--text3)">Target: ${fmtDisplay(r.target)}</span>` : ''}
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="section-title">Milestones</div>
+      <button class="btn-add" onclick="openStepModal(${r.id})">+ Step</button>
+    </div>
+    ${steps.length === 0 ? '<div class="empty-state"><div class="empty-icon">🏁</div><p>Add your first milestone</p></div>' :
+    `<div class="step-timeline">
+      <div class="step-line"></div>
+      ${steps.map((s,i) => `
+        <div class="step-item">
+          <div class="step-dot ${s.completed ? 'done' : i === done ? 'active' : ''}" onclick="toggleStep(${s.id},${r.id})"></div>
+          <div class="step-content ${s.completed ? 'done' : ''}">
+            <div style="display:flex;justify-content:space-between">
+              <div class="step-content-title">${s.title}</div>
+              <span onclick="deleteStep(${s.id},${r.id})" style="font-size:12px;color:var(--text3);cursor:pointer">🗑</span>
+            </div>
+            ${s.description ? `<div class="step-content-desc">${s.description}</div>` : ''}
+            ${s.date ? `<div style="font-size:10px;color:var(--text3);margin-top:4px">📅 ${fmtDisplay(s.date)}</div>` : ''}
+          </div>
+        </div>`).join('')}
+    </div>`}
+    <div style="margin-top:16px">
+      <button onclick="deleteRoadmap(${r.id})" style="width:100%;padding:12px;border-radius:var(--radius-sm);border:1px solid rgba(245,100,124,.3);background:rgba(245,100,124,.08);color:var(--red);font-size:13px;cursor:pointer">Delete Roadmap</button>
+    </div>`;
+}
+function openStepModal(roadmapId) {
+  document.getElementById('stepTitle').value = '';
+  document.getElementById('stepDesc').value = '';
+  document.getElementById('stepDate').value = '';
+  document.getElementById('stepModal').dataset.roadmapId = roadmapId;
+  document.getElementById('stepModal').classList.add('open');
+}
+function saveStep() {
+  const title = document.getElementById('stepTitle').value.trim();
+  if (!title) { toast('Please enter a title'); return; }
+  const rid = parseInt(document.getElementById('stepModal').dataset.roadmapId);
+  STATE.steps.push({
+    id: Date.now(), roadmapId: rid, title, description: document.getElementById('stepDesc').value,
+    date: document.getElementById('stepDate').value, completed: false,
+    order: STATE.steps.filter(s => s.roadmapId === rid).length
+  });
+  save(); closeModal('stepModal');
+  const r = STATE.roadmaps.find(r => r.id === rid);
+  renderRoadmapDetail(r); toast('Step added 🏁');
+}
+function toggleStep(id, rid) {
+  const s = STATE.steps.find(s => s.id === id);
+  if (s) { s.completed = !s.completed; save(); renderRoadmapDetail(STATE.roadmaps.find(r => r.id === rid)); }
+}
+function deleteStep(id, rid) {
+  STATE.steps = STATE.steps.filter(s => s.id !== id);
+  save(); renderRoadmapDetail(STATE.roadmaps.find(r => r.id === rid));
+}
+function deleteRoadmap(id) {
+  STATE.roadmaps = STATE.roadmaps.filter(r => r.id !== id);
+  STATE.steps = STATE.steps.filter(s => s.roadmapId !== id);
+  save(); navTo('roadmap');
+}
+
+// ===================== HABITS =====================
+function openHabitModal() {
+  document.getElementById('habitName').value = '';
+  document.getElementById('habitModal').classList.add('open');
+}
+function saveHabit() {
+  const name = document.getElementById('habitName').value.trim();
+  if (!name) { toast('Please enter a name'); return; }
+  STATE.habits.push({
+    id: Date.now(), name,
+    icon: document.getElementById('habitIcon').value,
+    freq: document.getElementById('habitFreq').value,
+    color: selectedColors.habit,
+    streak: 0, longestStreak: 0, completedDates: []
+  });
+  save(); renderHabits(); closeModal('habitModal'); toast('Habit created 🔥');
+}
+function renderHabits() {
+  const el = document.getElementById('habitList');
+  const today = fmtDate(new Date());
+  if (STATE.habits.length === 0) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">🔥</div><p>Build your first habit</p></div>'; return; }
+  el.innerHTML = STATE.habits.map(h => {
+    const doneToday = h.completedDates && h.completedDates.includes(today);
+    return `<div class="habit-item">
+      <div class="habit-icon" style="background:${h.color}22">${h.icon}</div>
+      <div class="habit-info">
+        <div class="habit-name">${h.name}</div>
+        <div class="habit-streak">🔥 ${h.streak || 0} day streak · ${h.freq}</div>
+      </div>
+      <div class="habit-check ${doneToday ? 'done' : ''}" onclick="toggleHabit(${h.id})"></div>
+      <div onclick="deleteHabit(${h.id})" style="font-size:16px;color:var(--text3);cursor:pointer;padding-left:8px">🗑</div>
+    </div>`;
+  }).join('');
+}
+function toggleHabit(id) {
+  const h = STATE.habits.find(h => h.id === id);
+  if (!h) return;
+  if (!h.completedDates) h.completedDates = [];
+  const today = fmtDate(new Date());
+  if (h.completedDates.includes(today)) {
+    h.completedDates = h.completedDates.filter(d => d !== today);
+    h.streak = Math.max(0, (h.streak || 1) - 1);
+    toast('Habit unmarked');
+  } else {
+    h.completedDates.push(today);
+    h.streak = (h.streak || 0) + 1;
+    if (h.streak > (h.longestStreak || 0)) h.longestStreak = h.streak;
+    toast(`${h.icon} ${h.name} done! 🔥 ${h.streak} day streak`);
+  }
+  save(); renderHabits();
+}
+function deleteHabit(id) { STATE.habits = STATE.habits.filter(h => h.id !== id); save(); renderHabits(); }
+
+// ===================== MODALS =====================
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+});
+
+// ===================== COLOR PICKERS =====================
+function initColorPickers() {
+  const pickers = { plan:'planColorPicker', counter:'counterColorPicker', roadmap:'roadmapColorPicker', habit:'habitColorPicker' };
+  Object.entries(pickers).forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = COLORS.map(c => `<div class="color-opt ${c === selectedColors[key] ? 'selected' : ''}" style="background:${c}" onclick="selectColor('${key}','${c}',this)"></div>`).join('');
+  });
+}
+function selectColor(key, color, el) {
+  selectedColors[key] = color;
+  el.parentElement.querySelectorAll('.color-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ===================== TOAST =====================
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function scheduleReminderToast(task) {
+  if (!task.reminder) return;
+  const diff = new Date(task.reminder) - new Date();
+  if (diff > 0 && diff < 86400000) {
+    setTimeout(() => toast(`⏰ Reminder: ${task.title}`), diff);
+  }
+}
+
+
+// ===================== SEED DATA =====================
+function seedIfEmpty() {
+  if (STATE.tasks.length === 0 && STATE.plans.length === 0) {
+    const today = fmtDate(new Date());
+    STATE.tasks = [
+      { id: 1, title: 'Review project proposal', description: '', category: 'Work', priority: 2, due: today, completed: false, createdAt: Date.now() },
+      { id: 2, title: 'Buy groceries', description: 'Milk, eggs, bread', category: 'Personal', priority: 1, due: today, completed: false, createdAt: Date.now() },
+      { id: 3, title: 'Morning workout', description: '', category: 'Health', priority: 1, due: today, completed: true, createdAt: Date.now() },
+    ];
+    const h = new Date().getHours();
+    STATE.plans = [
+      { id: 1, title: 'Team standup', description: 'Daily sync', date: today, time: `${String(h+1).padStart(2,'0')}:00`, color: '#7c6ef5', completed: false },
+      { id: 2, title: 'Lunch break', description: '', date: today, time: '13:00', color: '#5de8c1', completed: false },
+      { id: 3, title: 'Review emails', description: '', date: today, time: `${String(h+2).padStart(2,'0')}:30`, color: '#f5a623', completed: false },
+    ];
+    STATE.counters = [
+      { id: 1, name: 'Water Cups', value: 3, step: 1, color: '#64c8f5' },
+      { id: 2, name: 'Pomodoros', value: 0, step: 1, color: '#f5647c' },
+    ];
+    STATE.habits = [
+      { id: 1, name: 'Morning Exercise', icon: '💪', freq: 'daily', color: '#5de8c1', streak: 5, longestStreak: 12, completedDates: [] },
+      { id: 2, name: 'Read 20 minutes', icon: '📚', freq: 'daily', color: '#7c6ef5', streak: 3, longestStreak: 7, completedDates: [] },
+      { id: 3, name: 'Drink 8 glasses', icon: '💧', freq: 'daily', color: '#64c8f5', streak: 8, longestStreak: 8, completedDates: [] },
+    ];
+    STATE.roadmaps = [
+      { id: 1, title: 'Learn Web Development', description: 'Full-stack journey', category: 'Learning', target: '', color: '#7c6ef5', createdAt: Date.now() }
+    ];
+    STATE.steps = [
+      { id: 1, roadmapId: 1, title: 'HTML & CSS Basics', description: 'Learn fundamentals', date: '', completed: true, order: 0 },
+      { id: 2, roadmapId: 1, title: 'JavaScript Core', description: 'ES6+', date: '', completed: true, order: 1 },
+      { id: 3, roadmapId: 1, title: 'React Framework', description: 'Components & hooks', date: '', completed: false, order: 2 },
+      { id: 4, roadmapId: 1, title: 'Backend with Node.js', description: 'APIs & databases', date: '', completed: false, order: 3 },
+    ];
+    save();
+  }
+}
+
+// On load
+load();
+seedIfEmpty();
+</script>
+</body>
+</html>
